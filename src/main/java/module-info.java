@@ -4,7 +4,6 @@ module com.example.filetransferapp {
     requires java.desktop;
 
 
-    opens com.example.filetransferapp to javafx.fxml;
     exports com.example.filetransferapp.server;
     exports com.example.filetransferapp.client;
     opens com.example.filetransferapp.server to javafx.fxml;

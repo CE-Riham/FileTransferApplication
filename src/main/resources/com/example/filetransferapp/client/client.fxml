@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.filetransferapp.client.UDPClient">
+<AnchorPane nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.filetransferapp.client.ClientGUIController">
    <children>
       <VBox layoutX="40.0" layoutY="40.0" prefHeight="163.0" prefWidth="520.0" spacing="20.0">
          <children>
@@ -35,7 +35,8 @@
             </HBox>
             <HBox alignment="CENTER_RIGHT" prefWidth="200.0">
                <children>
-                  <Button fx:id="sendButton" mnemonicParsing="false" onAction="#onSendButtonClick" text="Send file" />
+                  <Button fx:id="chooseFile" mnemonicParsing="false" onAction="#chooseFileClicked" text="choose file" />
+                  <Button fx:id="sendButton" mnemonicParsing="false" text="Send file" />
                </children>
                <VBox.margin>
                   <Insets bottom="10.0" top="10.0" />
