@@ -13,12 +13,12 @@ public class UDPServerThread implements Runnable{
     private  DatagramPacket packet, sendPacket;
     private  byte[] buffer;
 
-    private ArrayList<Byte> incomingData ;
-    private boolean readingData ;
+
+
     private static boolean running;
     UDPServerThread() throws SocketException {
-        incomingData = new ArrayList<Byte>() ;
-        readingData = false ;
+
+
         running = true;
         buffer = new byte[1024];
         packet = new DatagramPacket(buffer, buffer.length);
@@ -35,6 +35,8 @@ public class UDPServerThread implements Runnable{
     @Override
     public void run(){
         synchronized(this){
+            boolean readingData =false  ;
+            ArrayList<Byte> incomingData = new ArrayList<Byte>() ; ;
             while(running){
                 try {
                     socket.receive(packet);
@@ -43,62 +45,23 @@ public class UDPServerThread implements Runnable{
                 }
                 int t=0;
                 String input = (new String(packet.getData(), 0, packet.getLength()));
-                if(input.equals("##start##")){
-                    readingData = true ;
-                }
                 if(input.equals("##end##")){
                     readingData = false ;
+
                     byte []dataArr = getBytes(incomingData);
                     incomingData.clear();
-
-
-                    BufferedImage image = null;
-                    try {
-                        image = ImageIO.re;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    // create the object of ByteArrayOutputStream class
-                    ByteArrayOutputStream outStreamObj = new ByteArrayOutputStream();
-
-                    // write the image into the object of ByteArrayOutputStream class
-                    try {
-                        ImageIO.write(image, "jpg", outStreamObj);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    // create the byte array from image
-                    byte [] byteArray = outStreamObj.toByteArray();
-
-                    // create the object of ByteArrayInputStream class
-                    // and initialized it with the byte array.
-                    ByteArrayInputStream inStreambj = new ByteArrayInputStream(byteArray);
-
-                    // read image from byte array
-                    BufferedImage newImage = null;
-                    try {
-                        newImage = ImageIO.read(inStreambj);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    // write output image
-                    try {
-                        ImageIO.write(newImage, "jpg", new File("outputImage.jpg"));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-
-
                     System.out.println((new String(dataArr, 0, dataArr.length)));
                 }
+
                 if(readingData){
                     for(int i =0 ; i < packet.getData().length ; i ++ ){
                         incomingData.add(packet.getData()[i]);
                     }
                 }
+                if(input.startsWith("##start##")){
+                    readingData = true ;
+                }
+
 
             }
             socket.close();
