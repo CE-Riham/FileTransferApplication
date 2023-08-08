@@ -7,12 +7,10 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="FileTransferApp" />
-        <module name="video_img_proj" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="FileTransferApp" target="19" />
-      <module name="video_img_proj" target="19" />
     </bytecodeTargetLevel>
   </component>
 </project>

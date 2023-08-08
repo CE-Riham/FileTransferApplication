@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/video_img_proj.iml" filepath="$PROJECT_DIR$/.idea/video_img_proj.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FileTransferApp.iml" filepath="$PROJECT_DIR$/FileTransferApp.iml" />
     </modules>
   </component>
 </project>
