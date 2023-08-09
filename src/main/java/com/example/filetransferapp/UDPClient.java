@@ -1,30 +1,31 @@
 package com.example.filetransferapp;
-import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class UDPClient extends Application implements Initializable {
+public class UDPClient implements Initializable {
     final FileChooser fileChooser = new FileChooser();
     private DatagramSocket socket, ackSocket;
     private InetAddress serverAddress;
     private int serverPort, clientIntPort=1212;
     @FXML
     private TextField serverIP, serverPortTF, clientIP;
-
+    @FXML
+    private Label packetsStatus;
+    @FXML
+    private VBox packetsLog;
     private String fileName;
+    private int sentPackets=0, failedPackets=0;
 
     //-----------------------------------------------------------------------------------------------------------------------
     public void setServerPort(int port){
@@ -37,16 +38,23 @@ public class UDPClient extends Application implements Initializable {
     }
 
     public void createSocket(int port, String address) throws Exception {
-        System.out.println("Creating socket... ");
+        addToLogAndPrint("Creating socket... ");
         setServerPort(port);
         setServerAddress(address);
         socket = new DatagramSocket();
         ackSocket = new DatagramSocket();
-        System.out.println("Socket was created successfully :)\n");
+        addToLogAndPrint("Socket was created successfully :)\n");
+    }
+
+    private void addToLogAndPrint(String msg) throws InterruptedException {
+        Node label = new Label(msg);
+        label.setStyle("-fx-text-fill: blue;");
+        packetsLog.getChildren().add(label);
+        System.out.println(msg);
     }
 
     private void sendFile() throws Exception {
-        System.out.println("sending...");
+        addToLogAndPrint("sending ...");
         File file = new File(fileName);
         sendACK(file.getName());
         int sequenceNumber = 0;
@@ -69,31 +77,42 @@ public class UDPClient extends Application implements Initializable {
             socket.send(packet);
             String ackMessage = new String(ackPacket.getData(), 0, ackPacket.getLength());
             if (ackMessage.equals("ACK " + sequenceNumber)) {
-                System.out.println("Packet " + sequenceNumber + " sent and acknowledged.");
+                sentPackets++;
+                addToLogAndPrint("Packet " + sequenceNumber + " sent and acknowledged.");
                 sequenceNumber = (sequenceNumber + 1) % 2; // Toggle sequence number
                 bytesRead = fileInputStream.read(buffer);
             } else {
-                System.out.println("Packet " + sequenceNumber + " not acknowledged. Retransmitting.");
+                addToLogAndPrint("Packet " + sequenceNumber + " not acknowledged. Retransmitting.");
+                failedPackets++;
             }
             // Introduce a delay for simulation purposes
             Thread.sleep(100);
         }
         fileInputStream.close();
-        System.out.println("sent successfully");
+        addToLogAndPrint("sent successfully");
     }
 
     private void sendACK(String msg) throws IOException {
         DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(),serverAddress, serverPort);
         ackSocket.send(packet);
     }
-
+    private void endSending() throws Exception {
+        sendACK("\n##END##\n");
+        String msg = "Number of successful packets: "+sentPackets+", number of failed packet: "+failedPackets;
+        packetsStatus.setText(msg);
+        packetsStatus.setVisible(true);
+        sentPackets=0;
+        failedPackets=0;
+        Thread.sleep(1000);
+    }
     @FXML
     public void onSendButtonClick(javafx.event.ActionEvent event) throws Exception {
+        packetsStatus.setVisible(false);
+        addToLogAndPrint(" ");
         createSocket(Integer.parseInt(serverPortTF.getText()), serverIP.getText());
         sendACK("\n##START##\n");
         sendFile();
-        sendACK("\n##END##\n");
-        Thread.sleep(1000);
+        endSending();
     }
 
     @FXML
@@ -107,60 +126,24 @@ public class UDPClient extends Application implements Initializable {
         fileName = file.getAbsolutePath();
     }
 
-//    int getFreePort() throws IOException {
-//        for(int port = 1 ; port <= 9999; port++){
-//            try {
-//                if(!MainClass.availablePort(port))
-//                    continue;
-//                DatagramSocket tmp = new DatagramSocket(port);
-//                tmp.close();
-//                MainClass.editPort(port);
-//                MainClass.editPort(clientIntPort);
-//                return port;
-//            } catch (IOException ex) {
-//                continue;
-//            }
-//        }
-//        throw new IOException("no free port found");
-//    }
-//
-//    private void updatePort() throws IOException {
-//        clientIntPort = getFreePort();
-//        clientPort.setText(Integer.toString(clientIntPort));
-//    }
-//
-//    @FXML
-//    void updatePort(ActionEvent e) throws IOException {
-//        updatePort();
-//    }
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-//        try {
-//            updatePort();
-//        } catch (IOException e) {
-//            System.out.println("Couldn't update the port");
-//        }
         String hostname = "null";
         try {
             hostname = InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
-            System.out.println("Couldn't get client IP");
+            try {
+                addToLogAndPrint("Couldn't get client IP");
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
         }
         clientIP.setText(hostname);
     }
 
-    @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(UDPClient.class.getResource("client.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
-        stage.setTitle("Client side");
-        stage.setScene(scene);
-        stage.show();
-    }
 
     public static void main(String[] args) {
-        launch();
+        System.exit(0);
     }
 
 }

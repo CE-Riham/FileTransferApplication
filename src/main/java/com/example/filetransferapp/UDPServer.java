@@ -1,21 +1,13 @@
 package com.example.filetransferapp;
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Scene;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
-
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-public class UDPServer extends Application implements Initializable {
+public class UDPServer implements Initializable {
     private DatagramSocket socket, ackSocket;
     private int serverIntPort = 1234 ;
     private byte[] buffer;
@@ -38,6 +30,8 @@ public class UDPServer extends Application implements Initializable {
     private void saveToFile(byte[]data, String name) throws Exception{
         File file = new File(name);
         FileOutputStream fileOutputStream = new FileOutputStream(file);
+        fileOutputStream.write(new byte[0]);
+        System.out.println(new String(data));
         fileOutputStream.write(data);
         fileOutputStream.close();
     }
@@ -113,14 +107,16 @@ public class UDPServer extends Application implements Initializable {
                     ackSocket.send(ackPacket);
 
                     //receive packet
+                    buffer  = new byte[1024];
+                    packet = new DatagramPacket(buffer, buffer.length);
                     socket.receive(packet);
                     input = new String(packet.getData(), 0, packet.getLength());
                     System.out.println(input);
-                        for(int i =0 ; i < packet.getData().length ; i ++ ){
-                            packets.add(packet.getData()[i]);
-                        }
-                        receivedPackets++;
-                        expectedSequenceNumber = (expectedSequenceNumber + 1) % 2; // Toggle sequence number
+                    for(int i =0 ; i < packet.getData().length ; i ++ ){
+                        packets.add(packet.getData()[i]);
+                    }
+                    receivedPackets++;
+                    expectedSequenceNumber = (expectedSequenceNumber + 1) % 2; // Toggle sequence number
 
                 } else {
                     System.out.println("Received out-of-sequence packet. Discarding.");
@@ -144,24 +140,10 @@ public class UDPServer extends Application implements Initializable {
         }
         serverIP.setText(hostname);
     }
-    @Override
-    public void start(Stage stage) throws Exception {
-        FXMLLoader fxmlLoader = new FXMLLoader(UDPClient.class.getResource("server.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 600, 400);
-        stage.setTitle("server side");
-        stage.setScene(scene);
-        stage.show();
-        new Thread(() -> {
-            try {
-                UDPServer server = new UDPServer();
-                server.startReceiving();
-            } catch (Exception e2) {
-                e2.printStackTrace();
-            }
-        }).start();
-    }
-    public static void main(String[] args) throws Exception {
-        launch();
+
+    public static void main(String[] args){
+//        launch();
+        System.exit(0);
     }
 
 }
