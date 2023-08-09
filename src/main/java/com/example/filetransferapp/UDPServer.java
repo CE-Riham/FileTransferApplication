@@ -38,6 +38,8 @@ public class UDPServer extends Application implements Initializable {
     private void saveToFile(byte[]data, String name) throws Exception{
         File file = new File(name);
         FileOutputStream fileOutputStream = new FileOutputStream(file);
+        fileOutputStream.write(new byte[0]);
+        System.out.println(new String(data));
         fileOutputStream.write(data);
         fileOutputStream.close();
     }
@@ -113,6 +115,8 @@ public class UDPServer extends Application implements Initializable {
                     ackSocket.send(ackPacket);
 
                     //receive packet
+                    buffer  = new byte[1024];
+                    packet = new DatagramPacket(buffer, buffer.length);
                     socket.receive(packet);
                     input = new String(packet.getData(), 0, packet.getLength());
                     System.out.println(input);
